@@ -35,14 +35,21 @@ if __name__ == "__main__":
         primary_measurement = 'reflectivity'
 
     #Read radar file
+
     radar = pyart.io.read(filename)
     #determine if SACR or SAPR
+
     if 'sacr' in filename.lower():
         radar_type = 'sacr'
     elif 'sapr' in filename.lower():
         radar_type = 'sapr'
     else:
         radar_type = 'sapr'
+
+    #this will define the reflectivity ranges
+
+    pvmin = None
+    pvmax = None
 
     if primary_measurement == 'reflectivity':
         if radar_type == 'sacr':
@@ -52,13 +59,27 @@ if __name__ == "__main__":
             pvmin = sapr_range[0]
             pvmax = sapr_range[1]
     elif primary_measurement == 'velocity':
+        nyq = radar.instrument_parameters['nyquist_velocity']['data']
+        pvmin = -1.0*nyq
+        pvmax = nyq
 
-    #this will define the reflectivity ranges
     #Determine scanning strategy
+
+    fig = plt.figure(figsize = [4,3])
     #Create radar display
+
+    radar_display = pyart.graph.RadarDisplay(radar)
     #Plot
+
+    radar_display
     #generate file name
     #save
+
+    plt.savefig(dpi=100)
+    plt.close(fig)
+    del radar
+
+
 
 
 
