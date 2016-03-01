@@ -2,14 +2,17 @@
 %% that amssamp2.tex uses the [twocol] option to produce
 %% two-column text.
 
-\documentclass{ametsoc}
+%\documentclass{ametsoc}
 
-%\documentclass[twocol]{ametsoc}
+\documentclass[twocol]{ametsoc}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% To be entered only if twocol option is used
 
-\journal{jcli}
+\journal{jtech}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 
 %  Please choose a journal abbreviation to use above from the following list:
 % 
@@ -55,17 +58,54 @@ and Jonathan Helmus}
 
 
 \section{Introduction}
-The Atmospheric Radiation Measurement Program \cite{mather_arm_2012} (ARM) has a long history of sensing clouds in the column using the Millimeter Cloud Radar (MMCR, Now Ka-Band Zenith Radar or KaZR). Starting in 2010 ARM embarked on program to better characterize the domain surrounding the column using scanning radars at millimeter and centimeter wavelengths. Processing for the shorter wavelengths has been previously published  \cite{kollias_scanning_2013} this report is limited to 5 and 3cm wavelengths. Due to the agility and lower cost per radar the program opted not to operate the common wavelength of 10cm (S-Band) which is  robust to liquid water path attenuation in all but the most severe storms. This necessitates the development of robust code for the correction of issues due to the two way propagation of the radar through medium that both scatters and attenuates. In addition, the trade off between wavelength, maximum unambiguous range and Doppler nyquist velocity means the radars alias at 12.4 and 16.52 $\mathrm{ms^{-1}}$ when operating in a baseline mode (such as during the Mid-Latitude  Convective Continental Clouds Experiment $\mathrm{MC^3E} $ \cite{jensen_midlatitude_2015}. Due to extreme velocities of scatterers aloft and, in places such as Oklahoma, at the surface, alaising is common and requires post moment calculation dealiasing. There are many techniques for dealiasing Doppler velocities (eg \cite{james_real-time_2001}) however on testing we found these techniques to be either difficult to implement in an operational chain or lacking in robustness. 
+The Atmospheric Radiation Measurement Program (\cite{mather_arm_2012}) (ARM) has a long history of sensing clouds in the column using the Millimeter Cloud Radar (MMCR, Now Ka-Band Zenith Radar or KaZR). Starting in 2010 ARM embarked on program to better characterize the domain surrounding the column using scanning radars at millimeter and centimeter wavelengths. Processing for the shorter wavelengths has been previously published  \cite{kollias_scanning_2013} this report is limited to 5 and 3cm wavelengths. Due to the agility and lower cost per radar the program opted not to operate the common wavelength of 10cm (S-Band) which is  robust to liquid water path attenuation in all but the most severe storms. This necessitates the development of robust code for the correction of issues due to the two way propagation of the radar through medium that both scatters and attenuates. In addition, the trade off between wavelength, maximum unambiguous range and Doppler nyquist velocity means the radars alias at 12.4 and 16.52 $\mathrm{ms^{-1}}$ for 3 and 5cm respectively when operating in a baseline mode (such as during the Mid-Latitude  Convective Continental Clouds Experiment $\mathrm{MC^3E} $ (\cite{jensen_midlatitude_2015}). Due to extreme velocities of scatterers aloft and, in places such as Oklahoma, at the surface, aliasing is common and requires post moment calculation dealiasing. There are many techniques for dealiasing Doppler velocities (eg \cite{james_real-time_2001}) however on testing we found these techniques to be either difficult to implement in an operational chain or lacking in robustness. 
 
-When we first attempted to build a processing chain each step 
+When we first attempted to build a processing chain each step made its own decision on where to conditionally run based on various measurements of "quality"  such as the co-polar (zero lag) correlation coefficient $\mathrm{\rho_{HV}}$ and Normalized Coherent Power (NCP, also referred to as Signal Quality Index or SQI). These are defined as:
+\begin{align}
+\rho_{HV}(0) &= \frac{|<S_{VV}S_{hh}^*>|}{\sqrt{<|S_{HH}|^2><|S_{VV}|^2>}}\\
+NCP &= \frac{P_{coh}}{P_{DC}}.
+\end{align}
+
+Where the $S$ terms are elements of the scattering matrix, $P_{coh}$ is the coherent part of the doppler spectrum and $P_{DC}$ is the incoherent part. Since ARM radars use magnetron transmitters the phase is randomized from pulse to pulse so when a first trip return is mixed with a return from a scatterer beyond the maximum unambiguous range the derived radar Doppler spectrum when averaged over many pulses is flat and the NCP is low. While the Doppler spectrum from a first trip has structure from which (depending on the method) a peak can be found and Doppler velocity determined and the NCP approaches 1.0. However, the usefulness of NCP alone in second trip detection breaks down in regions of high spectral width. When the spectral width approaches the nyquist velocity, even in areas of purely first trip, the NCP decreases. This is especially troublesome in regions of high convergence and divergence in convective storms, often causing false flagging of these regions. 
+
+To overcome the issues of arbitrary decision making and faults in using NCP alone to detect multiple trips our application chain, Corrected Moments in Antenna Coordinates first attempts to identify the nature of the scattering medium at the gate. This gate-ID is performed before any corrections are applied so it is different to hydrometeor identification codes (eg \cite{dolan_theory-based_2009}, \cite{wen_cluster-based_2015}, \cite{al-sakka_new_2013} etc.)
+
 
 \section{Application chain}
 Show the chain
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{application_chain.png}
+    \label{fig:chain}
+    \caption{The Application chain for Corrections in Antenna Coordinates 2.0}
+\end{figure}
 
 
 \subsection{Calculations performed to aid identification of scatterers at gate}
 Texture 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\columnwidth]{grid.png}
+    \label{fig:grid}
+    \caption{Illustration of the concept of a moving filter over range gates of adjacent rays. The center element, $\mathrm{(i,j)}$ is calculated by passing surrounding elements. The footprint of the surrounding elements is determined by the kernel. In many cases we use a 3x3 kernel}
+\end{figure}
 
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.4\columnwidth}
+        \includegraphics[width=\columnwidth]{radial_velocity.png}
+        \caption{Radial velocity}
+        \label{fig:textcalc:vr}
+    \end{subfigure}
+     %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.4\columnwidth}
+        \includegraphics[width=\columnwidth]{texture.png}
+        \caption{Texture}
+        \label{fig:textcalc:vr}
+    \end{subfigure}
+    \caption{Calculations of texture of radial velocity from the C-Band Scanning ARM Precipitation Radar (C-SAPR) using circular statistic to avoid false texture on folds}\label{fig:textcalc}
+\end{figure}
 \subsubsection{Fuzzy logic based identification of scatterers at gate}
 Cool stuff on Gate ID \cite{gourley_fuzzy_2007}
 
