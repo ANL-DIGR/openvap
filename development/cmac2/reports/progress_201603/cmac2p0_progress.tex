@@ -14,6 +14,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{hyperref}
+\usepackage{url}
 %  Please choose a journal abbreviation to use above from the following list:
 % 
 %   jamc     (Journal of Applied Meteorology and Climatology)
@@ -129,28 +130,55 @@ The Application chain for CMAC2.0 is shown in fig ~\ref{fig:chain} and can be br
 
 \subsection{Calculations performed to aid identification of scatterers at gate}
 \label{ssec:precalc}
-There are two steps to add information in order to determine dominant scattering process at the gate:
- Mapping temperature to gate locations and using texture of radial velocity as a discriminant of significant scattering. 
+There are two steps to add information in order to determine 
+dominant scattering process at the gate:
+ Mapping temperature to gate locations and using texture of 
+ radial velocity as a discriminant of significant scattering. 
 
-Since Py-ART already ascribes a cartesian displacement from the radar for each gate using a simple
- $\mathrm{\frac{4}{3}R_e}$ standard atmosphere propagation model CMAC2.0 simply interpolates
-  sonde data available from ARM soundings (via the interpolated sonde product DOI). 
+Since Py-ART already ascribes a cartesian displacement 
+from the radar for each gate using a simple
+ $\mathrm{\frac{4}{3}R_e}$ standard atmosphere 
+ propagation model CMAC2.0 simply interpolates
+  sonde data available from ARM soundings (via the
+   interpolated sonde product DOI). 
 
 The idea behind texture is that when second trips (or no-trips) dominate, due to the pulse-to-pulse 
 randomized phase of a magnetron transmitter, radial velocity should vary, from gate to gate, between
  nyquist and negative nyquist randomly. As long as there is some structure to the radar Doppler spectrum
   the signal processor should be able to pick a peak and determine the 1$\mathrm{^{st}}$ moment 
   being the radial velocity. Thus the gate-to-gate and azimuth to azimuth variation, or texture of Doppler 
-  velocity should be able to act as a good discriminant of significant returns. The abstract concept is for a central pixel, (i,j) in \ref{fig:grid}, the points surrounding in a n by m kernel are collected then the statistic (eg variance) is calculated on the set of points and is returned as the (i,j)$\mathrm{^{th}}$ value in the resultant 2D (range, time/azimuth) array. 
+  velocity should be able to act as a good discriminant of significant returns.
+  The abstract concept is for a central pixel, (i,j) in \ref{fig:grid},
+ the points surrounding in a n by m kernel are collected
+ then the statistic (eg variance) is calculated on the set of 
+ points and is returned as the (i,j)$\mathrm{^{th}}$ value in 
+ the resultant 2D (range, time/azimuth) array. 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\columnwidth]{grid.png}
-    \caption{Illustration of the concept of a moving filter over range gates of adjacent rays. The center element, $\mathrm{(i,j)}$ is calculated by passing surrounding elements. The footprint of the surrounding elements is determined by the kernel. In many cases we use a 3x3 kernel}
+    \caption{Illustration of the concept of a moving filter over range gates of adjacent rays. 
+    The center element, $\mathrm{(i,j)}$ is calculated by passing surrounding elements. 
+    The footprint of the surrounding elements is determined by the kernel. In many cases we use a 3x3 kernel}
     \label{fig:grid}
 \end{figure}
 
-The challenge comes from the desire to calculate this pre-correction. Doppler folding will generate a significant signal in the texture field if done purely on radial velocity values. However projection of radial velocity values 
+The challenge comes from the desire to calculate this pre-correction. Doppler folding will generate a 
+significant signal in the texture field if done purely on radial velocity values. However projection of radial 
+velocity values onto a unit circle allows a smooth transition from positive nyquist to negative nyquist 
+and there is a branch of mathematics dealing with the statistics of directions and magnitudes known
+ as directional statistics (\cite{wiki:dstats}). Values from positive nyquist to negative nyquist are projected
+  onto a circle with $\theta$ = 0 to $\mathrm{\pi}$ and the standard deviation is given by:
+
+\begin{align}
+x &= \cos{\theta}\\
+y &= \sin{\theta}\\
+R &= \sqrt{\bar{x}^2 + \bar{y}^2}\\ 
+S &= \sqrt{-2 * \log{R}}
+\label{eq:tex}
+\end{align}
+
+Figure \ref{fig:textcalc:vr} shows a typical radial velocity field, with folds, from the ARM C-SAPR at the Southern Great Plains. Figure \ref{fig:textcalc:tx} shows the texture field calculated by passing eq. \ref{eq:tex} over data in \ref{fig:textcalc:vr} using a 3x3 kernel as shown in fig \ref{fig:grid}. 
 
 \begin{figure}[h]
     \centering
@@ -164,13 +192,68 @@ The challenge comes from the desire to calculate this pre-correction. Doppler fo
     \begin{subfigure}[b]{0.4\columnwidth}
         \includegraphics[width=\columnwidth]{texture.png}
         \caption{Texture}
-        \label{fig:textcalc:vr}
+        \label{fig:textcalc:tx}
     \end{subfigure}
-    \caption{Calculations of texture of radial velocity from the C-Band Scanning ARM Precipitation Radar (C-SAPR) using circular statistic to avoid false texture on folds}\label{fig:textcalc}
+    \caption{Calculations of texture of radial velocity from the C-Band Scanning ARM Precipitation Radar (C-SAPR) using circular statistic to avoid false texture on folds}
 \end{figure}
-\subsubsection{Fuzzy logic based identification of scatterers at gate}
-Cool stuff on Gate ID \cite{gourley_fuzzy_2007}
 
+There are clearly higher values of texture where there are no significant returns while texture falls 
+quickly over the precipitation echo boundaries. However the exact values of texture to be used 
+in the membership function to delineate between significant and non-significant will depend on 
+many factors that influence texture including number of samples, signal to noise etcetera.
+ Plotting a histogram of texture values yields  two distinctly separated populations of gates. 
+ To find the discrimination point we use Scientific Python's (\cite{scipy}) continuous wavelet transform-based
+ peak finding algorithm (\cite{Du01092006}) to find the location of the left and right peak. The cut off is then
+ decided by finding the minimum value, or valley, between the two peaks. Ad-hoc testing shows this to be robust
+ even when changing radar types. We tested with X,C and Ka band radars all using different configurations. 
+ 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{peak_finding.png}
+    \caption{Histogram of texture values from the volume shown in fig \ref{fig:textcalc:vr}. The left hand peak corresponds to 
+    significant returns, the right hand to noise. The black and red lines are the peak center guess by a wavelet based technique. 
+    The green line is the minimum value between the two peaks. }
+    \label{fig:grid}
+\end{figure}
+
+
+\subsection{Fuzzy logic based identification of scatterers at gate}
+As previously discussed the aim of this step is to identify the dominant scatterer at each gate to aid in decision making 
+upchain. Work has been done using fuzzy logic for precipitation determination before (see, for example
+  \cite{gourley_fuzzy_2007}). However since ARM is not doing 
+
+
+
+\begin{table*}[ht]
+\caption{Wide single-column table in a twocolumn document.}
+\centering
+\begin{tabular}{p{0.1\linewidth}p{0.12\linewidth}p{0.12\linewidth}p{0.12\linewidth}p{0.12\linewidth}p{0.12\linewidth}p{0.12\linewidth}}
+\hline
+Class & Tex& $\rho_{HV}$ &NCP & height & Temperature & SNR\\
+\hline
+Second trip & [[5.,6.,130.,130.], 5.0] & [[.5,.7,1,1], 0.0] & [[0,0,.5,.6], 0.0] & [[0,0,5000,8000], 0.0] & [[-100,-100,100,100], 0.0] & [[15,20, 1000,1000],1.0] \\
+melting & [[[0, 0, 4, 6], 1.5]& [[0.6, 0.65, 0.9, 0.96], 3.5]& [[0.4, 0.5, 1, 1], 0]& [[0, 0.5, 6, 7], 1.0]& [[0, 0, 25000, 25000], 0.0]& [[8, 10, 1000, 1000], 0.0]] \\
+multi trip & [[[5.0, 6.0, 130.0, 130.0], 5.0]& [[0.5, 0.7, 1, 1], 0.0]& [[0, 0, 0.5, 0.6], 0.0]& [[-100, -100, 100, 100], 0.0]& [[0, 0, 5000, 8000], 0.0]& [[15, 20, 1000, 1000], 1.0]]\\
+rain & [[[0, 0, 4, 6], 1.0]& [[0.97, 0.98, 1, 1], 1.0]& [[0.4, 0.5, 1, 1], 1.0]& [[2.0, 5.0, 100, 100], 2.0]& [[0, 0, 5000, 6000], 0.0]& [[8, 10, 1000, 1000], 1.0]]\\
+snow & [[[0, 0, 4, 6], 1.0]& [[0.65, 0.9, 1, 1], 1.0]& [[0.4, 0.5, 1, 1], 1.0]& [[-100, -100, 0.5, 4.0], 2.0]& [[0, 0, 25000, 25000], 0.0]& [[8, 10, 1000, 1000], 1.0]]\\
+\hline
+\end{tabular}
+\end{table*}
+
+
+%\begin{table*}
+%\centering
+%\begin{tabular*}{lcr}
+%1 & 2 & 3 \        4 & 5 & 6 \        7 & 8 & 9
+%%\topline
+%%Class & Tex& $\rho_{HV}$ &NCP & height & Temperature & SNR\\
+%%1 & 2 & 3 & 4 & 5& 6\
+%%\midline
+%%[[5.,6.,130.,130.], 5.0] & [[.5,.7,1,1], 0.0] & [[0,0,.5,.6], 0.0] & [[0,0,5000,8000], 0.0] & [[-100,-100,100,100], 0.0] & [[15,20, 1000,1000],1.0] \
+%%\botline
+%\end{tabular*}
+%\end{table*}
 
 \section{Challeges}
 The data u

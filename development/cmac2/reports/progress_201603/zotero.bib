@@ -86,6 +86,29 @@
 @STRING{WF        = "Wea.\ Forecasting"}
 @STRING{WMOB      = "WMO Bull."}
 
+@Misc{scipy,
+  author =    {Eric Jones and Travis Oliphant and Pearu Peterson and others},
+  title =     {{SciPy}: Open source scientific tools for {Python}},
+  year =      {2001--},
+  url = "http://www.scipy.org/",
+  note = {[Online; accessed 2016-03-02]}
+}
+
+@article{Du01092006,
+author = {Du, Pan and Kibbe, Warren A. and Lin, Simon M.}, 
+title = {Improved peak detection in mass spectrum by incorporating continuous wavelet transform-based pattern matching},
+volume = {22}, 
+number = {17}, 
+pages = {2059-2065}, 
+year = {2006}, 
+doi = {10.1093/bioinformatics/btl355}, 
+abstract ={Motivation: A major problem for current peak detection algorithms is that noise in mass spectrometry (MS) spectra gives rise to a high rate of false positives. The false positive rate is especially problematic in detecting peaks with low amplitudes. Usually, various baseline correction algorithms and smoothing methods are applied before attempting peak detection. This approach is very sensitive to the amount of smoothing and aggressiveness of the baseline correction, which contribute to making peak detection results inconsistent between runs, instrumentation and analysis methods.Results: Most peak detection algorithms simply identify peaks based on amplitude, ignoring the additional information present in the shape of the peaks in a spectrum. In our experience, ?true? peaks have characteristic shapes, and providing a shape-matching function that provides a ?goodness of fit? coefficient should provide a more robust peak identification method. Based on these observations, a continuous wavelet transform (CWT)-based peak detection algorithm has been devised that identifies peaks with different scales and amplitudes. By transforming the spectrum into wavelet space, the pattern-matching problem is simplified and in addition provides a powerful technique for identifying and separating the signal from the spike noise and colored noise. This transformation, with the additional information provided by the 2D CWT coefficients can greatly enhance the effective signal-to-noise ratio. Furthermore, with this technique no baseline removal or peak smoothing preprocessing steps are required before peak detection, and this improves the robustness of peak detection under a variety of conditions. The algorithm was evaluated with SELDI-TOF spectra with known polypeptide positions. Comparisons with two other popular algorithms were performed. The results show the CWT-based algorithm can identify both strong and weak peaks while keeping false positive rate low.Availability: The algorithm is implemented in R and will be included as an open source module in the Bioconductor project.Contact:s-lin2@northwestern.eduSupplementary material:http://basic.northwestern.edu/publications/peakdetection/. Colour versions of the figures in this article can be found at Bioinformatics Online.}, 
+URL = {http://bioinformatics.oxfordjournals.org/content/22/17/2059.abstract}, 
+eprint = {http://bioinformatics.oxfordjournals.org/content/22/17/2059.full.pdf+html}, 
+journal = {Bioinformatics} 
+}
+
+
 @article{balsley_use_1982,
 	title = {On the {Use} of {Radars} for {Operational} {Wind} {Profiling}},
 	volume = {63},
@@ -2273,6 +2296,14 @@
 	pages = {1906--1915}
 }
 
+@misc{ wiki:dstats,
+   author = "Wikipedia",
+   title = "Directional statistics --- Wikipedia{,} The Free Encyclopedia",
+   year = "2016",
+   url = "https://en.wikipedia.org/w/index.php?title=Directional_statistics&oldid=705952853",
+   note = "[Online; accessed 1-March-2016]"
+ }
+ 
 @article{heistermann_emergence_2014,
 	title = {The {Emergence} of {Open} {Source} {Software} for the {Weather} {Radar} {Community}},
 	issn = {0003-0007},
