@@ -220,13 +220,26 @@ many factors that influence texture including number of samples, signal to noise
 
 \subsection{Fuzzy logic based identification of scatterers at gate}
 As previously discussed the aim of this step is to identify the dominant scatterer at each gate to aid in decision making 
-upchain. Work has been done using fuzzy logic for precipitation determination before (see, for example
-  \cite{gourley_fuzzy_2007}). However since ARM is not doing 
+upchain. While fuzzy logic has been used for particle identification extensively few investigators have done this as a first step (pre $K_{dp}$ etc). A Notable exception is work by 
+  \cite{gourley_fuzzy_2007}. Preprocessing ID depends on using the moments and derived products assuming they contain all the issues associated with unprocessed data. 
+  We use a simple scheme which associates a membership with each classification of: Melting layer, Multi-trip, Rain and Snow. We have future plans to include gates that are contaiminated
+  by hail in the propagation path. Membership functions are shown in table \ref{tab:mbf}. At the moment, with the exception of texture as referenced in sec \ref{ssec:precalc}, these are determined using 
+  trail and error. As we have set up a robust codebase using Py-ART and Scikits Fuzzy we can revisit the membership functions at any time using better formulations 
+  determined using mixtures of machine learning and other techniques. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{flog.png}
+    \caption{Highest score determined categories with hard constraints for the dominant scattering process for each gate from the C-SAPR alongside with (clockwise) reflectivity factor,
+    Texture and cross correlation ratio. These values will be used to determine what post-processing will  be applied gate-to-gate.  }
+    \label{fig:flog}
+\end{figure}
 
 
 
 \begin{table*}[ht]
-\caption{Wide single-column table in a twocolumn document.}
+\caption{Inputs for trapezoidal membership functions for various classes }
+\label{tab:mbf}
 \centering
 \begin{tabular}{p{0.05\linewidth}p{0.12\linewidth}p{0.16\linewidth}p{0.12\linewidth}p{0.14\linewidth}p{0.12\linewidth}p{0.14\linewidth}}
 \hline
@@ -234,8 +247,8 @@ Class & Tex (m/s)& $\rho_{HV} $ &NCP & Temperature (C) &height (km)  & SNR (dB)\
 \hline
 melting & [0, 0, 4, 6], 1.5& [0.6, 0.65, 0.9, 0.96], 3.5& [0.4, 0.5, 1, 1], 0& [0, 0.5, 6, 7], 1& [0, 0, 25, 25], 0& [8, 10, 1000, 1000], 0 \\
 multi trip &[5, 6, 130, 130], 5&[0.5, 0.7, 1, 1], 0&[0, 0, 0.5, 0.6], 0&[-100, -100, 100, 100], 0&[0, 0, 5, 8], 0&[15, 20, 1000, 1000], 1\\
-rain &[0, 0, 4, 6], 1& [0.97, 0.98, 1, 1],1.0& [0.4, 0.5, 1, 1], 1& [2, 5, 100, 100], 2& [0, 0, 5, 6], 0]& [8, 10, 1000, 1000], 1\\
-snow &[0, 0, 4, 6], 1& [0.65, 0.9, 1, 1],1.0& [0.4, 0.5, 1, 1], 1& [-100, -100, 0.5, 4.0], 2& [0, 0, 25, 25], 0& [8, 10, 1000, 1000], 1\\
+rain &[0, 0, 4, 6], 1& [0.97, 0.98, 1, 1],1& [0.4, 0.5, 1, 1], 1& [2, 5, 100, 100], 2& [0, 0, 5, 6], 0]& [8, 10, 1000, 1000], 1\\
+snow &[0, 0, 4, 6], 1& [0.65, 0.9, 1, 1],1& [0.4, 0.5, 1, 1], 1& [-100, -100, 0.5, 4], 2& [0, 0, 25, 25], 0& [8, 10, 1000, 1000], 1\\
 \hline
 \end{tabular}
 \end{table*}
