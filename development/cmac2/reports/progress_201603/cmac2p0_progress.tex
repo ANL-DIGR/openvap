@@ -227,16 +227,6 @@ upchain. While fuzzy logic has been used for particle identification extensively
   trail and error. As we have set up a robust codebase using Py-ART and Scikits Fuzzy we can revisit the membership functions at any time using better formulations 
   determined using mixtures of machine learning and other techniques. 
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.95\columnwidth]{flog.png}
-    \caption{Highest score determined categories with hard constraints for the dominant scattering process for each gate from the C-SAPR alongside with (clockwise) reflectivity factor,
-    Texture and cross correlation ratio. These values will be used to determine what post-processing will  be applied gate-to-gate.  }
-    \label{fig:flog}
-\end{figure}
-
-
-
 \begin{table*}[ht]
 \caption{Inputs for trapezoidal membership functions for various classes }
 \label{tab:mbf}
@@ -253,6 +243,33 @@ snow &[0, 0, 4, 6], 1& [0.65, 0.9, 1, 1],1& [0.4, 0.5, 1, 1], 1& [-100, -100, 0.
 \end{tabular}
 \end{table*}
 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{flog.png}
+    \caption{Highest score determined categories with hard constraints for the dominant scattering process for each gate from the C-SAPR alongside with (clockwise) reflectivity factor,
+    Texture and cross correlation ratio. These values will be used to determine what post-processing will  be applied gate-to-gate.  }
+    \label{fig:flog}
+\end{figure}
+
+Figure \ref{fig:flog} shows an example of scatterer at gate identification from the 1.9 degree PPI tilt from the C-SAPR during MC3E as a organized linear convective system passed over the site. 
+Regions of snow scatterers are shown in cyan, rain in green, multi-trip in red, mixed scattering in yellow (eg melting layer) and no significant return in grey. Work is proceeding on determining if 
+a radial is hail contaminated as is work on clutter identification and tagging.  Figure \ref{fig:xfuz} shows an example of scatterer at gate identification from the 37.3 degree horizon to horizon 
+RHI from the X-SAPR during for the stratiform region of the same system. The high elevation "stripe" is an artifact likely caused by near field distortion of the antenna pattern by a metal object
+(powerline) causing the bright band to be present at those angles. 
+
+Gate, or scatter ID, is used to form Py-ART Gate-filter objects which can be the passed to subsequent processing algorithm. For example Linear programming (see sec XX) filtering of $\phi_{DP}$ 
+would be performed gates identified as rain and attenuation correction (offset) on the union of rain, melting layer and snow. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{xsaprfuz.png}
+    \caption{Highest score determined categories with hard constraints for the dominant scattering process for each gate from the X-SAPR alongside with reflectivity factor }
+    \label{fig:xfuz}
+\end{figure}
+
+
+\subsection{Calculations performed to aid identification of scatterers at gate}
 
 %\begin{table*}
 %\centering
