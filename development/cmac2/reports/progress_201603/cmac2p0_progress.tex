@@ -269,7 +269,23 @@ would be performed gates identified as rain and attenuation correction (offset) 
 \end{figure}
 
 
-\subsection{Calculations performed to aid identification of scatterers at gate}
+\subsection{Corrections and retrievals}
+In order to have the greatest impact to stakeholders the ARM radars need to provide high quality calibrated and corrected moments and measurements. By measurements we mean the {\it intrisnsic} value. 
+That is the measurement corrected for all the issues of propagation and processing. In CMAC2.0 this means:
+\begin{itemize}  
+\item Dealiased doppler velocities 
+\item $\phi_{DP}$ corrected for non-uniform beam filling and phase shift on backscatter
+\item Specific differential phase $K_{DP}$
+\item Specific Attenuation 
+\item Reflectivity corrected for liquid water path attenuation
+\end{itemize}
+\subsubsection{Dealiasing}
+Originally the Four Dimensional Dealiasing, (4DD, \cite{james_real-time_2001} ) was wrapped into Py-ART using NASA's Radar Software Library (RSL). Issues with the implementation of the paper into  
+code led to a long discussion on issues in Dealising (see https://github.com/ARM-DOE/pyart/issues/119). Discussions led to two new solutions in doppler velocity unfolding: Fringe pattern based and region based. Unlike 
+the dealiasing of cloud radar data where it can be assumed scatterers move purely with the wind storm dynamics creates radial velocity patterns that can move counter flow. The fringe or "phase based" technique is an image analysis technique designed for removing fringe patters from interferometric images. Early tests were sub-par and while the technique is added to Py-ART it is rarely used. The region based technique performs Doppler velocity dealiasing by finding regions of similar velocities and unfolding and merging pairs of regions until all regions are unfolded. Unfolding and merging regions is accomplished by modeling the problem as a dynamic network reduction. 
+\subsubsection{Filtering of measured phase shift between vertical and horizontal polarization}
+\cite{giangrande_application_2013}
+
 
 %\begin{table*}
 %\centering
