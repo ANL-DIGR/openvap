@@ -305,7 +305,11 @@ see \cite{gian_2008} and references therein. In order to extract microphysical i
     \label{fig:lp1}
 \end{figure}
 
-Figure \ref{fig:lp1} shows a single radial of data from C-SAPR highlighting the LP technique. Raw $\Psi_{DP}$ is shown in green, retrieved $\Phi_{DP}$ in black, $K_{DP}$ in red and reflectivity (divided by 10) in blue. The retrieved  $\Phi_{DP}$ is strictly increasing resulting in a strictly positive $K_{DP}$.
+Figure \ref{fig:lp1} shows a single radial of data from C-SAPR highlighting the LP technique. Raw $\Psi_{DP}$ is shown in green, retrieved $\Phi_{DP}$ in black, $K_{DP}$ in red and reflectivity (divided by 10) in blue. The retrieved  $\Phi_{DP}$ is strictly increasing resulting in a strictly positive $K_{DP}$. LP minimization is achieved by using the CoinLP library. Initially PyGLPK was used but with a very welcome contribution to Py-ART from Kai M{\"u}hlbauer from the University of Bonn switching to CoinLP reduced volume processing time from 8 minutes to under a minute.  
+
+\subsubsection{Retrieval of specific attenuation}
+\label{sssec:ac}
+Specific attenuation, $A$ was retrieved using an adaptation of an iterative "hotspot" method as outlined in \cite{gu_polarimetric_2011}. Using the aforementioned gate ID a gatefilter is constructed that only calculates $A$ in regions of liquid precipitation assuming attenuation due to ice is negligible and in mixed phase regions intractable. Occasionally clutter can throw off the adaptive technique creating hotspots where none occur. While not much of an issue for specific attenuation 
 
 %\begin{table*}
 %\centering
