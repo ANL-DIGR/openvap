@@ -92,7 +92,7 @@ To overcome the issues of arbitrary decision making and faults in using NCP alon
  Antenna Coordinates first attempts to identify the nature of the scattering medium at the gate. This gate-ID is performed before any corrections are
   applied so it is different to hydrometeor identification codes (eg \cite{dolan_theory-based_2009}, \cite{wen_cluster-based_2015}, \cite{al-sakka_new_2013} etc.) 
   that seek to gain microphysical insight. Gate-ID is performed for the purpose of objectively determining where future algorithms should be applied. 
-  Since we are implementing CMAC2.0 using the Python-ARM Radar Toolkit (Py-ART, \cite{heistermann_emergence_2014}) we can use the the
+  Since we are implementing CMAC2.0 using the Python-ARM Radar Toolkit (Py-ART, \cite{heistermann_emergence_2014}, \cite{pyartjors}) we can use the the
    identifications to construct a \href{https://github.com/ARM-DOE/pyart/blob/master/pyart/filters/gatefilter.py#L111 }{gate filter}.
 
 
@@ -222,7 +222,7 @@ many factors that influence texture including number of samples, signal to noise
 As previously discussed the aim of this step is to identify the dominant scatterer at each gate to aid in decision making 
 upchain. While fuzzy logic has been used for particle identification extensively few investigators have done this as a first step (pre $K_{dp}$ etc). A Notable exception is work by 
   \cite{gourley_fuzzy_2007}. Preprocessing ID depends on using the moments and derived products assuming they contain all the issues associated with unprocessed data. 
-  We use a simple scheme which associates a membership with each classification of: Melting layer, Multi-trip, Rain and Snow. We have future plans to include gates that are contaiminated
+  We use a simple scheme which associates a membership with each classification of: Melting layer, Multi-trip, Rain and Snow. We have future plans to include gates that are contaminated
   by hail in the propagation path. Membership functions are shown in table \ref{tab:mbf}. At the moment, with the exception of texture as referenced in sec \ref{ssec:precalc}, these are determined using 
   trail and error. As we have set up a robust codebase using Py-ART and Scikits Fuzzy we can revisit the membership functions at any time using better formulations 
   determined using mixtures of machine learning and other techniques. 
@@ -309,7 +309,18 @@ Figure \ref{fig:lp1} shows a single radial of data from C-SAPR highlighting the 
 
 \subsubsection{Retrieval of specific attenuation}
 \label{sssec:ac}
-Specific attenuation, $A$ was retrieved using an adaptation of an iterative "hotspot" method as outlined in \cite{gu_polarimetric_2011}. Using the aforementioned gate ID a gatefilter is constructed that only calculates $A$ in regions of liquid precipitation assuming attenuation due to ice is negligible and in mixed phase regions intractable. Occasionally clutter can throw off the adaptive technique creating hotspots where none occur. While not much of an issue for specific attenuation 
+Specific attenuation, $A$ was retrieved using an adaptation of an iterative "hotspot" method as outlined in \cite{gu_polarimetric_2011}. Using the aforementioned gate ID a gatefilter is constructed that only calculates $A$ in regions of liquid precipitation assuming attenuation due to ice is negligible and in mixed phase regions intractable. Occasionally clutter can throw off the $\phi_{dp}$ calculation which becomes apparent in the $K_{dp}$ and specific attenuation fields. to mitigate this we can $K_{dp}$ to 15 degrees per km. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{refl_before_and_after.png}
+    \caption{Reflectivity as measured by the radar and disdrometer offset adjusted attenuation corrected reflectivity with the significant feature detection mask applied}
+    \label{fig:zfix}
+\end{figure}
+
+Prior to the application of the attenuation correction we apply a reflectivity offset. For the data from MC3E we scale by comparing to a disdrometer measurement, in the future data will be provided calibrated using end-to-end means.  Figure \ref{fig:zfix} shows the original  reflectivity as produced by the radar on the left and the scaled and then corrected reflectivity on the right. The impact is particularly visible in the stratiform region (large drops from melted aggregates) behind the squall line. 
+
+
 
 %\begin{table*}
 %\centering
@@ -324,21 +335,19 @@ Specific attenuation, $A$ was retrieved using an adaptation of an iterative "hot
 %\end{tabular*}
 %\end{table*}
 
-\section{Challeges}
-The data u
+\section{Challenges}
+Initial robustness tests show we have a lot of work to do in the detection and tagging of clutter returns. Tests of the procedures on X-SAPR data show an even greater impact from clutter. We are currently working on techniques that look at the mean and variance of reflectivity in non-precipitating regions to diagnose clutter. However this is challenging as anomalous propagation exacerbates the clutter issue and is often present as a convective system cools and moistens the boundary layer.  
+The other challenge is in the software engineering of the LP method. It has been discovered that in regions of extended $\delta_{dp}$ the LP technique as it is in \cite{gian_2008} underperforms. The Author has a nice solution we have had difficulty implementing with the currently supported LP packages. We are still actively working on this issue. 
 
 \section{Future work}
-The climatology and varianc
+The current CMAC framework will be frozen as is and implemented into a data pipeline for the C-SAPR1 at the southern great plains. We will be coupling with the ARM Data Integrator (ADI, \cite{ADI}) to produce routine products. This will help identify both science and computational issues with the code and allow these to be fixed. We will also be working on clutter detection and tagging as well as revisiting attenuation correction including differential attenuation (correction of $Z_{dr}$, something we have not touched on yet. As well as looking at data going forward we will be revisiting the rich MC3E data set with weeks of radar data and corresponding disdrometer data. This will allow us to benchmark the performance of the underlying techniques. 
 
 %%%%%%%%%%%%%%%%%
 %ACKNOWLEDGMENTS
 %%%%%%%%%%%%%%%%%
 
 \acknowledgments{}
-
-Scott G
-
-Patricia
+This work would not have been possible without the support and patience of the scientific community. Specifically want to thank Scott Giangrande for his contributions of the LP code, all the radar mentors and specifically Nitin Bharadwaj for his tireless support. Kai M{\"u}hlbauer was instrumental in accelerating the LP method to the point of usability. And we greatly appreciate the support and advice of the  ASR Radar Science group specifically the chair, Pavlos Kollias. 
 
 %%%%%%%%%%%%%%%%%
 %APPENDIXES
